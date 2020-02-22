@@ -8,7 +8,7 @@ def restrictedFloat(num):
   try:
     num = float(num)
   except ValueError:
-    raise argparse.ArgumentTypeError("Confidence interval {} not a floating-point literal".form(num))
+    raise argparse.ArgumentTypeError("Confidence interval {} not a floating-point literal".format(num))
 
   if num < 0.0 or num > 1.0:
     raise argparse.ArgumentTypeError("Confidence interval {} not in range [0.0, 1.0]".format(num))
