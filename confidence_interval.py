@@ -3,6 +3,21 @@ import math
 from scipy.stats import norm
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
+#dictionary for z star values
+interval = {
+    1: 1.282,
+    2: 1.440,
+    3: 1.645,
+    4: 1.960,
+    5: 2.576,
+    6: 2.807,
+    7: 3.291,
+}
 
 #function to calculate the confidence interval + display on app
 def calculate_interval():
@@ -13,27 +28,48 @@ def calculate_interval():
     #do math
     error = float(sd)/math.sqrt(float(ss))
     #calculate the z star value
-    if(i.get() == 1):
-        z_star = 1.282
-    if(i.get() == 2):
-        z_star = 1.440
-    if(i.get() == 3):
-        z_star = 1.645
-    if(i.get() == 4):
-        z_star = 1.960
-    if(i.get() == 5):
-        z_star = 2.576
-    if(i.get() == 6):
-        z_star = 2.807
-    if(i.get() == 7):
-        z_star = 3.291
-    else:
-        z_star = 1.96
+    for x in interval:
+        x = i.get()
+        z_star= interval[x]
     #do more math
-    new_interval = z_star * error
+    new_interval = float(z_star) * error
     #setting string display
-    string_to_display = "The Confidence Interval is " + sm + " \u00B1" + str(new_interval)
+    string_to_display = "Confidence Interval:  " + sm + " \u00B1 " + str(new_interval)
     var_1.set(string_to_display)
+#function to graph out confidence interval calculated
+def graphing():
+    graph = tkinter.Toplevel()
+
+    sm = sample_mean_input.get()
+    sd = standard_deviation_input.get()
+    ss = sample_size_input.get()
+    error = float(sd)/math.sqrt(float(ss))
+
+    for x in interval:
+        x = i.get()
+        z_star= interval[x]
+
+    new_interval = float(z_star) * error
+    #graphing part
+    fig = Figure(figsize=(5, 4), dpi=100)
+    ax = fig.add_subplot(111)
+    x = np.linspace(float(sm) - 3 * float(sd), float(sm) + 3 * float(sd), 10000)
+    nVals = [norm.pdf(i,float(sm),float(sd)) for i in x]
+    ax.plot(x,nVals)
+    x1 = float(sm) - new_interval
+    x2 = float(sm) + new_interval
+    ax.fill_between(x,nVals,color = '#111111',where = (x > x1) & (x < x2))
+
+    canvas = FigureCanvasTkAgg(fig, master= graph)
+    canvas.draw()
+    toolbar = NavigationToolbar2Tk(canvas, graph)
+    toolbar.update()
+
+    button = tkinter.Button(master=graph, text="Quit", command=graph.destroy)
+
+    button.pack(side=tkinter.BOTTOM)
+    canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
 
 #basic setup
 root = tkinter.Tk()
@@ -68,6 +104,7 @@ interval_7 = tkinter.Radiobutton(frame_choice, text = "99.9%", value = 7, variab
 
 #calculate button
 calculate_button = tkinter.Button(frame_button, text = 'Calculate', command = calculate_interval)
+graph_button = tkinter.Button(frame_button, text = 'Show Graph', command = graphing)
 
 #The confidence interval is....
 answer = tkinter.Label(frame_answer, textvariable = var_1)
@@ -87,7 +124,8 @@ interval_6.grid(row=3, column = 5)
 interval_7.grid(row=3, column = 6)
 
 #calculate button orientation
-calculate_button.grid(row=4)
+calculate_button.grid(row=4, column = 0)
+graph_button.grid(row=4, column = 1)
 
 #answer orientation
 answer.grid(row=5)
