@@ -2,10 +2,8 @@ import tkinter
 import math
 from scipy.stats import norm
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
-from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 
 #dictionary for z star values
@@ -22,42 +20,45 @@ interval = {
 #function to calculate the confidence interval + display on app
 def calculate_interval():
     #obtain inputs from sample mean, standard deviation, and sample size
-    sm = sample_mean_input.get()
-    sd = standard_deviation_input.get()
-    ss = sample_size_input.get()
+    sample_mean_value = sample_mean_input.get()
+    standard_deviation_value = standard_deviation_input.get()
+    sample_size_value = sample_size_input.get()
+    idek = interval_num_to_value.get()
+    if (not (sample_mean_value and standard_deviation_value and sample_size_value and idek)):
+        return
     #do math
-    error = float(sd)/math.sqrt(float(ss))
+    error = float(standard_deviation_value)/math.sqrt(float(sample_size_value))
     #calculate the z star value
     for x in interval:
-        x = i.get()
+        x = idek
         z_star= interval[x]
     #do more math
     new_interval = float(z_star) * error
     #setting string display
-    string_to_display = "Confidence Interval:  " + sm + " \u00B1 " + str(new_interval)
+    string_to_display = "Confidence Interval:  " + sample_mean_value + " \u00B1 " + str(new_interval)
     var_1.set(string_to_display)
 #function to graph out confidence interval calculated
 def graphing():
     graph = tkinter.Toplevel()
 
-    sm = sample_mean_input.get()
-    sd = standard_deviation_input.get()
-    ss = sample_size_input.get()
-    error = float(sd)/math.sqrt(float(ss))
+    sample_mean_value = sample_mean_input.get()
+    standard_deviation_value = standard_deviation_input.get()
+    sample_size_value = sample_size_input.get()
+    error = float(standard_deviation_value)/math.sqrt(float(sample_size_value))
 
     for x in interval:
-        x = i.get()
+        x = interval_num_to_value.get()
         z_star= interval[x]
 
     new_interval = float(z_star) * error
     #graphing part
     fig = Figure(figsize=(5, 4), dpi=100)
     ax = fig.add_subplot(111)
-    x = np.linspace(float(sm) - 3 * float(sd), float(sm) + 3 * float(sd), 10000)
-    nVals = [norm.pdf(i,float(sm),float(sd)) for i in x]
+    x = np.linspace(float(sample_mean_value) - 3 * float(standard_deviation_value), float(sample_mean_value) + 3 * float(standard_deviation_value), 10000)
+    nVals = [norm.pdf(i,float(sample_mean_value),float(standard_deviation_value)) for i in x]
     ax.plot(x,nVals)
-    x1 = float(sm) - new_interval
-    x2 = float(sm) + new_interval
+    x1 = float(sample_mean_value) - new_interval
+    x2 = float(sample_mean_value) + new_interval
     ax.fill_between(x,nVals,color = '#111111',where = (x > x1) & (x < x2))
 
     canvas = FigureCanvasTkAgg(fig, master= graph)
@@ -70,6 +71,10 @@ def graphing():
     button.pack(side=tkinter.BOTTOM)
     canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
+def handle_user_input(event):
+    print(event)
+    calculate_interval()
+
 
 #basic setup
 root = tkinter.Tk()
@@ -77,7 +82,7 @@ root.title("Confidence Interval Calculator")
 
 #variables used
 var_1 = tkinter.StringVar()
-i= tkinter.IntVar()
+interval_num_to_value= tkinter.IntVar()
 
 #frames to group stuff
 frame_labels = tkinter.Frame(root) #sample mean, standard deviation, and sample size
@@ -90,17 +95,27 @@ sample_mean = tkinter.Label(frame_labels, text = 'Sample Mean',).grid(row = 0)
 standard_deviation = tkinter.Label(frame_labels, text = 'Standard Deviation').grid(row=1)
 sample_size = tkinter.Label(frame_labels, text = 'Sample Size').grid(row=2)
 sample_mean_input = tkinter.Entry(frame_labels)
+sample_mean_input.bind('<KeyRelease>', handle_user_input)
 standard_deviation_input = tkinter.Entry(frame_labels)
+standard_deviation_input.bind('<KeyRelease>', handle_user_input)
 sample_size_input = tkinter.Entry(frame_labels)
+sample_size_input.bind('<KeyRelease>', handle_user_input)
 
 #confidence interval choices between 80-99.9%
-interval_1 = tkinter.Radiobutton(frame_choice, text = "80%", value = 1, variable = i)
-interval_2 = tkinter.Radiobutton(frame_choice, text = "85%", value = 2, variable = i)
-interval_3 = tkinter.Radiobutton(frame_choice, text = "90%", value = 3, variable = i)
-interval_4 = tkinter.Radiobutton(frame_choice, text = "95%", value = 4, variable = i)
-interval_5 = tkinter.Radiobutton(frame_choice, text = "99%", value = 5, variable = i)
-interval_6 = tkinter.Radiobutton(frame_choice, text = "99.5%", value = 6, variable = i)
-interval_7 = tkinter.Radiobutton(frame_choice, text = "99.9%", value = 7, variable = i)
+interval_1 = tkinter.Radiobutton(frame_choice, text = "80%", value = 1, variable = interval_num_to_value)
+interval_1.bind('<ButtonRelease>', handle_user_input)
+interval_2 = tkinter.Radiobutton(frame_choice, text = "85%", value = 2, variable = interval_num_to_value)
+interval_2.bind('<ButtonRelease>', handle_user_input)
+interval_3 = tkinter.Radiobutton(frame_choice, text = "90%", value = 3, variable = interval_num_to_value)
+interval_3.bind('<ButtonRelease>', handle_user_input)
+interval_4 = tkinter.Radiobutton(frame_choice, text = "95%", value = 4, variable = interval_num_to_value)
+interval_4.bind('<ButtonRelease>', handle_user_input)
+interval_5 = tkinter.Radiobutton(frame_choice, text = "99%", value = 5, variable = interval_num_to_value)
+interval_5.bind('<ButtonRelease>', handle_user_input)
+interval_6 = tkinter.Radiobutton(frame_choice, text = "99.5%", value = 6, variable = interval_num_to_value)
+interval_6.bind('<ButtonRelease>', handle_user_input)
+interval_7 = tkinter.Radiobutton(frame_choice, text = "99.9%", value = 7, variable = interval_num_to_value)
+interval_7.bind('<ButtonRelease>', handle_user_input)
 
 #calculate button
 calculate_button = tkinter.Button(frame_button, text = 'Calculate', command = calculate_interval)
